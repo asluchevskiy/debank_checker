@@ -66,7 +66,8 @@ class App:
                                   params={'addr': local_address})
 
             if '<title>429 Too Many Requests</title>' in await r.text():
-                await asyncio.sleep(1)
+                logger.error('429 error (too many requests), retry in 5 sec')
+                await asyncio.sleep(5)
                 continue
 
             # local_chains = [current_chain for current_chain in loads(await r.text())['data']['used_chains']]
