@@ -1,2 +1,3 @@
-privateKey
-mnemonic phrase
+0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1
+0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee3

@@ -12,6 +12,7 @@ from aiohttp_proxy import ProxyConnector
 from eth_account import Account
 from loguru import logger
 from pyuseragents import random as random_useragent
+from web3 import Web3
 
 logger.remove()
 logger.add(stderr,
@@ -65,6 +66,7 @@ class App:
                                   params={'addr': local_address})
 
             if '<title>429 Too Many Requests</title>' in await r.text():
+                await asyncio.sleep(1)
                 continue
 
             # local_chains = [current_chain for current_chain in loads(await r.text())['data']['used_chains']]
@@ -86,13 +88,13 @@ class App:
             usd_value = await self.get_usd_value(local_address=local_address.lower(),
                                                  session=session)
         if usd_value > 0:
-            async with aiofiles.open('with_balance.txt', 'a', encoding='utf-8-sig') as f:
-                await f.write(f'{original_data} | {usd_value}')
+            async with aiofiles.open('with_balance.txt', 'a') as f:
+                await f.write(f'{original_data} | {usd_value}\n')
             logger.success(f'{original_data} | {usd_value} $')
 
         else:
-            async with aiofiles.open('without_balance.txt', 'a', encoding='utf-8-sig') as f:
-                await f.write(f'{original_data} | {usd_value}')
+            async with aiofiles.open('without_balance.txt', 'a') as f:
+                await f.write(f'{original_data} | {usd_value}\n')
             logger.error(f'{original_data} | {usd_value} $')
 
         # for current_chain in chains:
@@ -102,34 +104,13 @@ class App:
 
 
 def wrapper(current_data) -> None:
-    wallet_data = None
-
-    if not wallet_data:
-        try:
-            wallet_data = Account.from_key(private_key=current_data)
-
-        except Exception:
-            pass
-
-    if not wallet_data:
-        try:
-            wallet_data = Account.from_key(private_key=f'0x{current_data}')
-
-        except Exception:
-            pass
-
-    if not wallet_data:
-        try:
-            wallet_data = Account.from_mnemonic(mnemonic=current_data)
-
-        except Exception:
-            pass
-
-    if not wallet_data:
-        logger.error(f'{current_data} | Строка не является сид-фразой/приват-ключом')
+    try:
+        address = Web3().to_checksum_address(current_data)
+    except Exception:
+        logger.error(f'{current_data} | Неверный формат Ethereum адреса')
         return
 
-    asyncio.run(App().get_wallet_price(local_address=wallet_data.address,
+    asyncio.run(App().get_wallet_price(local_address=address,
                                        original_data=current_data))
 
 
@@ -150,6 +131,7 @@ if __name__ == '__main__':
         proxies = None
 
     threads = int(input('Threads: '))
+    # threads = 1
 
     with Pool(processes=threads) as executor:
         executor.map(wrapper, source_data)

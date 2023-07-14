@@ -1,5 +1,5 @@
 # Debank Checker
-Принимает Private Key's (с 0x в начале и без) и mnemonic phrases
+Принимает Public Key's (с 0x в начале)
 
 ## source.txt
 Входные данные (private key or mnemonic phrase)
